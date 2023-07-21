@@ -16,7 +16,7 @@ function useStore(api, selector = api.getState, equalityFn) {
   return slice;
 }
 const createImpl = (createState) => {
-  if (process.env.NODE_ENV !== "production" && typeof createState !== "function") {
+  if ((import.meta.env && import.meta.env.MODE) !== "production" && typeof createState !== "function") {
     console.warn(
       "[DEPRECATED] Passing a vanilla store will be unsupported in a future version. Instead use `import { useStore } from 'zustand'`."
     );
@@ -28,7 +28,7 @@ const createImpl = (createState) => {
 };
 const create = (createState) => createState ? createImpl(createState) : createImpl;
 var react = (createState) => {
-  if (process.env.NODE_ENV !== "production") {
+  if ((import.meta.env && import.meta.env.MODE) !== "production") {
     console.warn(
       "[DEPRECATED] Default export is deprecated. Instead use `import { create } from 'zustand'`."
     );
