@@ -13,7 +13,7 @@ const getTrackedConnectionState = (name) => {
   const api = trackedConnections.get(name);
   if (!api) return {};
   return Object.fromEntries(
-    Object.entries(api.stores).map(([key, api2]) => [key, api2.getState()]),
+    Object.entries(api.stores).map(([key, api2]) => [key, api2.getState()])
   );
 };
 const extractConnectionInformation = (store, extensionConnector, options) => {
@@ -47,7 +47,7 @@ const devtoolsImpl =
     if (!extensionConnector) {
       if (process.env.NODE_ENV !== "production" && enabled) {
         console.warn(
-          "[zustand devtools middleware] Please install/enable Redux devtools extension",
+          "[zustand devtools middleware] Please install/enable Redux devtools extension"
         );
       }
       return fn(set, get, api);
@@ -78,7 +78,7 @@ const devtoolsImpl =
             {
               ...getTrackedConnectionState(options.name),
               [store]: api.getState(),
-            },
+            }
           );
       return r;
     };
@@ -103,9 +103,9 @@ const devtoolsImpl =
                   key === connectionInformation.store
                     ? initialState
                     : store2.getState(),
-                ],
-              ),
-            ),
+                ]
+              )
+            )
           );
     }
     if (api.dispatchFromDevtools && typeof api.dispatch === "function") {
@@ -118,7 +118,7 @@ const devtoolsImpl =
           !didWarnAboutReservedActionType
         ) {
           console.warn(
-            '[zustand devtools middleware] "__setState" action type is reserved to set state from the devtools. Avoid using it.',
+            '[zustand devtools middleware] "__setState" action type is reserved to set state from the devtools. Avoid using it.'
           );
           didWarnAboutReservedActionType = true;
         }
@@ -131,7 +131,7 @@ const devtoolsImpl =
         case "ACTION":
           if (typeof message.payload !== "string") {
             console.error(
-              "[zustand devtools middleware] Unsupported action format",
+              "[zustand devtools middleware] Unsupported action format"
             );
             return;
           }
@@ -147,7 +147,7 @@ const devtoolsImpl =
                     [zustand devtools middleware] Unsupported __setState action format. 
                     When using 'store' option in devtools(), the 'state' should have only one key, which is a value of 'store' that was passed in devtools(),
                     and value of this only key should be a state object. Example: { "type": "__setState", "state": { "abc123Store": { "foo": "bar" } } }
-                    `,
+                    `
                 );
               }
               const stateFromDevtools = action.state[store];
@@ -229,7 +229,7 @@ const devtoolsImpl =
                 : connection.send(
                     null,
                     // FIXME no-any
-                    nextLiftedState,
+                    nextLiftedState
                   );
               return;
             }
@@ -249,7 +249,7 @@ const parseJsonThen = (stringified, f) => {
   } catch (e) {
     console.error(
       "[zustand devtools middleware] Could not parse the received json",
-      e,
+      e
     );
   }
   if (parsed !== void 0) f(parsed);
@@ -363,12 +363,12 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
     return config(
       (...args) => {
         console.warn(
-          `[zustand persist middleware] Unable to update item '${options.name}', the given storage is currently unavailable.`,
+          `[zustand persist middleware] Unable to update item '${options.name}', the given storage is currently unavailable.`
         );
         set(...args);
       },
       get,
-      api,
+      api
     );
   }
   const thenableSerialize = toThenable(options.serialize);
@@ -396,7 +396,7 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
       void setItem();
     },
     get,
-    api,
+    api
   );
   let stateFromStorage;
   const hydrate = () => {
@@ -408,6 +408,7 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
       ((_a = options.onRehydrateStorage) == null
         ? void 0
         : _a.call(options, get())) || void 0;
+    // bind the storage object and get content
     return toThenable(storage.getItem.bind(storage))(options.name)
       .then((storageValue) => {
         if (storageValue) {
@@ -423,11 +424,11 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
             if (options.migrate) {
               return options.migrate(
                 deserializedStorageValue.state,
-                deserializedStorageValue.version,
+                deserializedStorageValue.version
               );
             }
             console.error(
-              `State loaded from storage couldn't be migrated since no migrate function was provided`,
+              `State loaded from storage couldn't be migrated since no migrate function was provided`
             );
           } else {
             return deserializedStorageValue.state;
@@ -438,7 +439,7 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
         var _a2;
         stateFromStorage = options.merge(
           migratedState,
-          (_a2 = get()) != null ? _a2 : configResult,
+          (_a2 = get()) != null ? _a2 : configResult
         );
         set(stateFromStorage, true);
         return setItem();
@@ -491,11 +492,15 @@ const oldImpl = (config, baseOptions) => (set, get, api) => {
 // focus on the type , persist func first arg - config has same type of its return type, that is the way to build plugin
 const newImpl = (config, baseOptions) => (set, get, api) => {
   let options = {
+    // default options , storage === localStorage etc...
     storage: createJSONStorage(() => localStorage),
+    // partialize can remove the properties that should not be stored , such as computed properties, functions, transient properties , private properties 
+    // default does not remove any properties
     partialize: (state) => state,
     version: 0,
     merge: (persistedState, currentState) => ({
       ...currentState,
+      //use persistedState first, use to load localStorage
       ...persistedState,
     }),
     ...baseOptions,
@@ -504,18 +509,21 @@ const newImpl = (config, baseOptions) => (set, get, api) => {
   const hydrationListeners = /* @__PURE__ */ new Set();
   const finishHydrationListeners = /* @__PURE__ */ new Set();
   let storage = options.storage;
+  // check if storage exists, config has same type as the return type of persist func
   if (!storage) {
     return config(
       (...args) => {
+        //if not exists , do noting , and return 
         console.warn(
-          `[zustand persist middleware] Unable to update item '${options.name}', the given storage is currently unavailable.`,
+          `[zustand persist middleware] Unable to update item '${options.name}', the given storage is currently unavailable.`
         );
         set(...args);
       },
       get,
-      api,
+      api
     );
   }
+  // use to set storage
   const setItem = () => {
     const state = options.partialize({ ...get() });
     return storage.setItem(options.name, {
@@ -523,28 +531,35 @@ const newImpl = (config, baseOptions) => (set, get, api) => {
       version: options.version,
     });
   };
+  // api const api = { setState, getState, subscribe, destroy }
   const savedSetState = api.setState;
+  // change api setState to below , so that when setState is called , it will call setItem to set storage
   api.setState = (state, replace) => {
     savedSetState(state, replace);
+    // ignore the return value of setItem, default return value is undefined
     void setItem();
   };
+  // configResult is one return result of persist func
   const configResult = config(
     (...args) => {
       set(...args);
       void setItem();
     },
     get,
-    api,
+    api
   );
+  //below is the hydrate func for get the existing state
   let stateFromStorage;
   const hydrate = () => {
     var _a, _b;
     if (!storage) return;
     hasHydrated = false;
+    // if any listeners added by user, call hydrationListeners
     hydrationListeners.forEach((cb) => {
       var _a2;
       return cb((_a2 = get()) != null ? _a2 : configResult);
     });
+    // if onRehydrateStorage is provided, call it
     const postRehydrationCallback =
       ((_b = options.onRehydrateStorage) == null
         ? void 0
@@ -552,18 +567,20 @@ const newImpl = (config, baseOptions) => (set, get, api) => {
     return toThenable(storage.getItem.bind(storage))(options.name)
       .then((deserializedStorageValue) => {
         if (deserializedStorageValue) {
+          // if version is provided and version is not equal to the version of storage, call migrate func
           if (
             typeof deserializedStorageValue.version === "number" &&
             deserializedStorageValue.version !== options.version
           ) {
+            // if migrate func is provided, call it
             if (options.migrate) {
               return options.migrate(
                 deserializedStorageValue.state,
-                deserializedStorageValue.version,
+                deserializedStorageValue.version
               );
             }
             console.error(
-              `State loaded from storage couldn't be migrated since no migrate function was provided`,
+              `State loaded from storage couldn't be migrated since no migrate function was provided`
             );
           } else {
             return deserializedStorageValue.state;
@@ -574,12 +591,14 @@ const newImpl = (config, baseOptions) => (set, get, api) => {
         var _a2;
         stateFromStorage = options.merge(
           migratedState,
-          (_a2 = get()) != null ? _a2 : configResult,
+          (_a2 = get()) != null ? _a2 : configResult
         );
         set(stateFromStorage, true);
+        // operation done , update state and set storage
         return setItem();
       })
       .then(() => {
+        // execute post operation of rehydration
         postRehydrationCallback == null
           ? void 0
           : postRehydrationCallback(stateFromStorage, void 0);
@@ -625,8 +644,10 @@ const newImpl = (config, baseOptions) => (set, get, api) => {
   if (!options.skipHydration) {
     hydrate();
   }
+  // if configResult exists , return it , otherwise return configResult
   return stateFromStorage || configResult;
 };
+// for compatibility of old code
 const persistImpl = (config, baseOptions) => {
   if (
     "getStorage" in baseOptions ||
@@ -635,13 +656,14 @@ const persistImpl = (config, baseOptions) => {
   ) {
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        "[DEPRECATED] `getStorage`, `serialize` and `deserialize` options are deprecated. Use `storage` option instead.",
+        "[DEPRECATED] `getStorage`, `serialize` and `deserialize` options are deprecated. Use `storage` option instead."
       );
     }
     return oldImpl(config, baseOptions);
   }
   return newImpl(config, baseOptions);
 };
+// rename
 const persist = persistImpl;
 
 export {

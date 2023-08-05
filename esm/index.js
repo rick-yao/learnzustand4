@@ -31,7 +31,6 @@ const createImpl = (createState) => {
   // consider func is passed , because we always want to use set & get func in store func
   const api =
     typeof createState === "function" ? createStore(createState) : createState;
-  // TODO what is this ?
   const useBoundStore = (selector, equalityFn) =>
     // key to not use provider , this takes advantages of useSyncExternalStore of react
     // check out for more
